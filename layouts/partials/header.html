@@ -36,6 +36,10 @@
         <link href="{{ $fontstyle.Permalink }}" rel="stylesheet">
 	{{ end }}
 
+	{{ if .Site.Params.googleIcons | default false -}}
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	{{ end }}
+
 	{{ $style := resources.Get "css/main.css" | fingerprint }}
 	<link rel="stylesheet" type="text/css" media="screen" href="{{ $style.Permalink }}" />
 
