@@ -17,7 +17,7 @@
 	<meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{if .IsPage}}{{ .Summary }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}" />
 	<meta property="og:image" content="{{ .Site.Params.og_image }}"/>
 	{{ with .OutputFormats.Get "rss" -}}
-	{{ printf `<link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .Permalink $.Site.Title | safeHTML }}
+	{{ printf `<link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .RelPermalink $.Site.Title | safeHTML }}
 	{{ end -}}
 
 	{{- template "_internal/opengraph.html" . -}}
@@ -32,20 +32,20 @@
         <link href="https://fonts.googleapis.com/css2?family=Fira+Sans&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
 	{{- else -}}
-	{{ $fontstyle := resources.Get "css/fonts.css" | fingerprint }}
-        <link href="{{ $fontstyle.Permalink }}" rel="stylesheet">
+	{{ $fontstyle := resources.Get "css/fonts.css" | minify | fingerprint }}
+        <link href="{{ $fontstyle.RelPermalink }}" rel="stylesheet">
 	{{ end }}
 
 	{{ if .Site.Params.googleIcons | default false -}}
 		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 	{{ end }}
 
-	{{ $style := resources.Get "css/main.css" | fingerprint }}
-	<link rel="stylesheet" type="text/css" media="screen" href="{{ $style.Permalink }}" />
+	{{ $style := resources.Get "css/main.css" | minify | fingerprint }}
+	<link rel="stylesheet" type="text/css" media="screen" href="{{ $style.RelPermalink }}" />
 
 	{{- if or (eq .Site.Params.mode "auto") (eq .Site.Params.mode "dark") (eq .Site.Params.mode "toggle") -}}
-		{{ $darkstyle := resources.Get "css/dark.css" | fingerprint }}
-		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="{{ $darkstyle.Permalink }}" {{ if eq .Site.Params.mode "auto" }}media="(prefers-color-scheme: dark)"{{ end }} {{ if eq .Site.Params.mode "toggle" }}disabled{{ end }} />
+		{{ $darkstyle := resources.Get "css/dark.css" | minify | fingerprint }}
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="{{ $darkstyle.RelPermalink }}" {{ if eq .Site.Params.mode "auto" }}media="(prefers-color-scheme: dark)"{{ end }} {{ if eq .Site.Params.mode "toggle" }}disabled{{ end }} />
 	{{ end }}
 
 	<!-- Mathjax support -->
@@ -92,17 +92,18 @@
 	<!-- Custom CSS style get applied last -->
 	{{- if isset .Site.Params "customcss" }}
 		{{ range .Site.Params.customCSS }}
-		{{ $customstyle := resources.Get . | fingerprint }}
-		<link rel="stylesheet" type="text/css" href="{{ $customstyle.Permalink }}">
+		{{ $customstyle := resources.Get . | minify | fingerprint }}
+		<link rel="stylesheet" type="text/css" href="{{ $customstyle.RelPermalink }}">
 		{{ end }}
 	{{- end -}}
 	{{- range .Site.Params.customJS }}
 	{{- if or (hasPrefix . "http://") (hasPrefix . "https://") }}
-	<script src="{{ . }}"></script>
+		<script src="{{ . }}"></script>
 	{{- else if (hasPrefix . "<script")}}
-    {{ .| safeHTML }}
+    	{{ .| safeHTML }}
 	{{- else }}
-	<script src="{{ $.Site.BaseURL }}{{ . }}"></script>
+		{{ $js := resources.Get . | js.Build (dict "minify" "true") | fingerprint }}
+		<script src="{{ $js.RelPermalink }}"></script>
 	{{- end }}
 	{{- end }}
 </head>
