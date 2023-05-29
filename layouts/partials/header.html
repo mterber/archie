@@ -92,10 +92,12 @@
 	<!-- Custom CSS style get applied last -->
 	{{- if isset .Site.Params "customcss" }}
 		{{ range .Site.Params.customCSS }}
-		{{ $customstyle := resources.Get . | minify | fingerprint }}
+		{{ $customstyle := resources.Get . | toCSS (dict "outputStyle" "compressed") | fingerprint }}
 		<link rel="stylesheet" type="text/css" href="{{ $customstyle.RelPermalink }}">
 		{{ end }}
 	{{- end -}}
+
+	{{/*  Custom JS files  */}}
 	{{- range .Site.Params.customJS }}
 	{{- if or (hasPrefix . "http://") (hasPrefix . "https://") }}
 		<script src="{{ . }}"></script>
@@ -106,4 +108,6 @@
 		<script src="{{ $js.RelPermalink }}"></script>
 	{{- end }}
 	{{- end }}
+
+	
 </head>
